@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <c6x.h>
 
 
 void interpImg(unsigned char *input, int width, int height, unsigned char *Output);
@@ -15,7 +14,7 @@ int main()
 
 	volatile unsigned long long start, end, cycles_example;
 
-	FILE *fIn;				                                    //Input File name
+	FILE *fIn;				                            //Input File name
 	FILE *fOut;                              		            //Output File name
 
 	int in_size = width*height;
@@ -24,8 +23,8 @@ int main()
 	unsigned char *Outbuff = malloc(op_size);
 	unsigned char *buffer = malloc(in_size);
 
-	const char *fone = "C:\\Users\\HP\\Downloads\\Image1_256x256.raw";
-	const char *ftwo = "C:\\Users\\HP\\Downloads\\op_withintrinsics.raw";
+	const char *fone = "C:\Users\\Bhargavi\\OneDrive\\Desktop\\PathPartner Training\\Assignment\\Programs\\Image1_256x256.raw";
+	const char *ftwo = "C:\\Users\\Bhargavi\\OneDrive\\Desktop\\PathPartner Training\\Assignment\\Programs\\output_img.raw";
 
 	fIn = fopen(fone,"rb");
 	fOut = fopen(ftwo,"wb");
@@ -34,15 +33,7 @@ int main()
 	fread(buffer,sizeof(unsigned char),in_size,fIn);		   //read image data into buffer
 	printf("Done with fread\n");
 
-	TSCL = 0;   /*Enable timer by writing any value on the TSC register*/
-	start = _itoll(TSCH, TSCL);   /*read 64-bit TSC register with Upper & lower words*/
-
 	interpImg(buffer, width, height, Outbuff);
-
-	end = _itoll(TSCH, TSCL);    /*read 64-bit TSC register with Upper & lower words*/
-	cycles_example = end - start;
-
-	printf("Value is %d\n",cycles_example);
 
 	fwrite(Outbuff,sizeof(unsigned char),op_size,fOut);	       //write interpolated data into fOut
 
@@ -71,7 +62,6 @@ void interpImg(unsigned char *input, int width, int height, unsigned char *Outpu
 	for(i = 0; i < height; i=i+1)
 	{
 		temp1[i][width_out]=0;
-		#pragma UNROLL(4);
 		for (j = 0; j < width_out; j=j+8)
 		{
 			temp1[i][j] = input[p];
@@ -81,7 +71,6 @@ void interpImg(unsigned char *input, int width, int height, unsigned char *Outpu
 			//_mem2(&temp1[i][j])=_mem2(&input[p]);
 			p = p+4;
 		}
-		#pragma UNROLL(4);
 		for (j = 0; j < width_out-1; j=j+8)
 		{
 
@@ -89,15 +78,7 @@ void interpImg(unsigned char *input, int width, int height, unsigned char *Outpu
 			temp1[i][j+3]=(temp1[i][j+2]+temp1[i][j+4]+1)/2;
 			temp1[i][j+5]=(temp1[i][j+4]+temp1[i][j+6]+1)/2;
 			temp1[i][j+7]=(temp1[i][j+6]+temp1[i][j+8]+1)/2;
-			/*
-			unsigned char z[4];
-			unsigned int x=_packl4 (_mem4(&temp1[i][j]), _mem4(&temp1[i][j+4]));
-			unsigned int y=_packl4 (_mem4(&temp1[i][j+2]), _mem4(&temp1[i][j+6]));
-			_mem4(&z)=_add4(x,y);
-			temp1[i][j+1]=(z[0]+1)/2;
-			temp1[i][j+3]=(z[1]+1)/2;
-			temp1[i][j+5]=(z[2]+1)/2;
-			temp1[i][j+7]=(z[3]+1)/2;*/
+
 		}
 
 		for (j = 0; j < width_out; j+=1)
